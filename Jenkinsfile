@@ -1,50 +1,90 @@
-pipeline { 
-    agent any  // Runs on any available Jenkins agent
-    
-    stages { 
-        stage('Checkout') { 
-            steps { 
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
                 git branch: 'main', url: 'https://github.com/Aarsh-37/Jenkins.git' // Replace with your repo
-            } 
-        } 
-
-        stage('Setup Environment') { 
-            steps { 
-                sh ''' 
+            }
+        }
+        stage('Setup Environment') {
+            steps {
+                sh '''
                 #!/bin/bash
-                python3 -m venv venv  # Create virtual environment
-                source venv/bin/activate  # Activate virtual environment
-                pip install --upgrade pip  # Upgrade pip
-                pip install -r requirements.txt  # Install dependencies
-                ''' 
-            } 
-        } 
-
-        stage('Build') { 
-            steps { 
-                sh ''' 
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install -r requirements.txt
+                '''
+            }
+        }
+        stage('Build') {
+            steps {
+                sh '''
                 #!/bin/bash
-                source venv/bin/activate  # Activate virtual environment
-                python src/main.py  # Run the application
-                ''' 
-            } 
-        } 
-
-        stage('Test') { 
-            steps { 
-                sh ''' 
+                . venv/bin/activate
+                python src/main.py
+                '''
+            }
+        }
+        stage('Test') {
+            steps {
+                sh '''
                 #!/bin/bash
-                source venv/bin/activate  # Activate virtual environment
-                pytest src/test_main.py --junitxml=test-results.xml  # Run tests with JUnit report
-                ''' 
-            } 
-        } 
-    } 
+                . venv/bin/activate
+                pytest src/test_main.py
+                '''
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs() // Clean the workspace after the pipeline is finished
+        }
+    }
+}
+	agent any
 
-    post { 
-        always { 
-            junit 'test-results.xml'  // Publish test results
-            cleanWs()  // Clean the workspace after the pipeline finishes
-        } 
-    } 
+	stages {
+		stage('Checkout') {
+			steps {
+				git branch: 'main', url: 'https://github.com/Aarsh-37/Jenkins.git' // Replace with your repo
+			}
+		}
+		stage('Setup Environment') {
+			steps {
+				// Use Bash for the entire stage
+				sh '''
+				#!/bin/bash
+				python3 -m venv venv
+				. venv/bin/activate
+				pip install -r requirements.txt
+				'''
+			}
+		}
+		stage('Build') {
+			steps {
+				// Use Bash for the entire stage
+				sh '''
+				#!/bin/bash
+				. venv/bin/activate
+				python src/main.py
+				'''
+			}
+		}
+		stage('Test') {
+			steps {
+				// Use Bash for the entire stage
+				sh '''
+				#!/bin/bash
+				. venv/bin/activate
+				pytest src/test_main.py
+				'''
+			}
+		}
+	}
+	post {
+		always {
+			cleanWs() // Clean the workspace after the pipeline is finished
+		}
+	}
 }
